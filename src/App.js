@@ -3,12 +3,31 @@ import Todo from "./components/Todo";
 import Form from "./components/Form";
 import Filterbutton from "./components/FilterButton";
 
+const FILTER_MAP = {
+  All: () => true,
+  Active: task => !task.completed,
+  Completed: task => task.completed
+};
 
+const FILTER_NAMES = Object.keys(FILTER_MAP);
+console.log("filter", FILTER_NAMES)
 
 function App(props) {
 
+  const [filter, setFilter] = useState('All');
   const [tasks, setTasks] = useState(props.tasks);
   let [counter, setCounter] = useState(3);
+
+  const filterList = FILTER_NAMES.map(name => (
+    <Filterbutton
+      key={name}
+      name={name}
+      isPressed={name === filter}
+      setFilter={setFilter}
+    />
+  ));
+
+  FILTER_NAMES.map(name => console.log(name));
 
   // const taskList = props.tasks.map(task => task.name);
   const taskList = tasks.map(task => (
@@ -25,7 +44,7 @@ function App(props) {
   );
 
   const tasksNoun = taskList.length !== 1 ? 'tasks' : 'task';
-  const headingText = `${taskList.length} ${tasksNoun} remaining`;   
+  const headingText = `${taskList.length} ${tasksNoun} remaining`;
 
   console.log("DATA", props.tasks)
 
@@ -56,7 +75,7 @@ function App(props) {
   }
 
   function editTask(id, newName) {
-    const editedTaskList = tasks.map( task => task.id == id ? {...task, name: newName} : task);
+    const editedTaskList = tasks.map(task => task.id == id ? { ...task, name: newName } : task);
     setTasks(editedTaskList);
   }
 
@@ -65,9 +84,7 @@ function App(props) {
       <h1>TodoMatic</h1>
       <Form addTask={addTask} />
       <div className="filters btn-group stack-exception">
-        <Filterbutton name="all" />
-        <Filterbutton name="actived" />
-        <Filterbutton name="completed" />
+        {filterList}
       </div>
       <h2 id="list-heading">
         {headingText}

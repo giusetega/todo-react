@@ -6,8 +6,13 @@ export default function Form(props) {
 
     function handleSubmit(e) {
         e.preventDefault();
-        props.addTask(name);
-        setName("");
+        if (name !== "") {
+            props.addTask(name);
+            setName("");
+        } else {
+            setName("Enter something");
+            setTimeout(() => setName(""), 700)
+        }
     }
 
     function handleOnChange(e) {
