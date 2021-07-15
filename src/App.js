@@ -18,20 +18,19 @@ function App(props) {
       completed={task.completed}
       key={task.id}
       toggleTaskCompleted={toggleTaskCompleted}
+      deleteTask={deleteTask}
+      editTask={editTask}
     />
   )
   );
 
   const tasksNoun = taskList.length !== 1 ? 'tasks' : 'task';
-  const headingText = `${taskList.length} ${tasksNoun} remaining`; 
-
-  
+  const headingText = `${taskList.length} ${tasksNoun} remaining`;   
 
   console.log("DATA", props.tasks)
 
   // Toggle task completed
   function toggleTaskCompleted(id) {
-    
     const updatedTasks = tasks.map(task => {
       // if this task has the same ID as the edited task
       if (id === task.id) {
@@ -49,6 +48,16 @@ function App(props) {
     const newTask = { id: "todo-" + counter, name: name, completed: false };
     setTasks([...tasks, newTask]);
     setCounter(++counter)
+  }
+
+  function deleteTask(id) {
+    const remainingTasks = tasks.filter(task => id !== task.id);
+    setTasks(remainingTasks);
+  }
+
+  function editTask(id, newName) {
+    const editedTaskList = tasks.map( task => task.id == id ? {...task, name: newName} : task);
+    setTasks(editedTaskList);
   }
 
   return (
