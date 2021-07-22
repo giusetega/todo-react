@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Todo from "./components/Todo";
 import Form from "./components/Form";
 import Filterbutton from "./components/FilterButton";
@@ -15,8 +15,26 @@ console.log("filter", FILTER_NAMES)
 function App(props) {
 
   const [filter, setFilter] = useState('All');
-  const [tasks, setTasks] = useState(props.tasks);
+  // const [tasks, setTasks] = useState(props.tasks);
+  const [tasks, setTasks] = useState([]);
   let [counter, setCounter] = useState(3);
+
+
+  // Use effect AJAX GET all tasks
+  useEffect(() => {
+    getAll()
+  }, [])
+
+  function getAll() {
+    fetch("http://localhost:3030/tasklist")
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        const result = data.task_list.map(({ _id, name, completed }) => ({ id: _id, name, completed }));
+        setTasks(result)
+      })
+      .catch(error => console.log("Si è verificato un errore!"))
+  }
 
   const filterList = FILTER_NAMES.map(name => (
     <Filterbutton
@@ -70,8 +88,22 @@ function App(props) {
   }
 
   function deleteTask(id) {
-    const remainingTasks = tasks.filter(task => id !== task.id);
-    setTasks(remainingTasks);
+    // const remainingTasks = tasks.filter(task => id !== task.id);
+    // setTasks(remainingTasks);
+    const URL = "http://localhost:3030/tasklist/" + id;
+    fetch(URL, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+      .then(response => {
+        console.log("IIIIIIIINNNNNN")
+        response.text()
+        getAll();
+      })
+      .catch(error => console.log("Si è verificato un errore!", error))
   }
 
   function editTask(id, newName) {
