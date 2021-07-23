@@ -66,43 +66,59 @@ function App(props) {
 
   console.log("DATA", props.tasks)
 
-  // Toggle task completed
+  // PUT completed
   function toggleTaskCompleted(id) {
-    const updatedTasks = tasks.map(task => {
-      // if this task has the same ID as the edited task
+    // const updatedTasks = tasks.map(task => {
+    //   // if this task has the same ID as the edited task
+    //   if (id === task.id) {
+    //     // use object spread to make a new object
+    //     // whose `completed` prop has been inverted
+    //     return { ...task, completed: !task.completed }
+    //   }
+    //   return task;
+    // });
+    // setTasks(updatedTasks);
+    tasks.map(task => {
       if (id === task.id) {
-        // use object spread to make a new object
-        // whose `completed` prop has been inverted
-        return { ...task, completed: !task.completed }
-      }
-      return task;
+        const URL = `http://localhost:3030/tasklist/${id}/completed`;
+        fetch(URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ "completed": !task.completed })
+        })
+          .then(response => { getAll(); })
+          .catch(error => console.log("Si è verificato un errore!", error))
+      };
+
+      getAll();
     });
-    setTasks(updatedTasks);
   }
 
-  // Add task
+  // POST task
   function addTask(name) {
-    const newTask = { id: "todo-" + counter, name: name, completed: false };
-    setTasks([...tasks, newTask]);
-    setCounter(++counter)
+    // const newTask = { id: "todo-" + counter, name: name, completed: false };
+    // setTasks([...tasks, newTask]);
+    // setCounter(++counter)
+    const URL = "http://localhost:3030/tasklist/create";
+    fetch(URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ "name": name })
+    })
+      .then(response => { getAll(); })
+      .catch(error => console.log("Si è verificato un errore!", error))
   }
 
+  // DELETE
   function deleteTask(id) {
     // const remainingTasks = tasks.filter(task => id !== task.id);
     // setTasks(remainingTasks);
     const URL = "http://localhost:3030/tasklist/" + id;
     fetch(URL, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/json' },
     })
-      .then(response => {
-        console.log("IIIIIIIINNNNNN")
-        response.text()
-        getAll();
-      })
+      .then(response => { getAll(); })
       .catch(error => console.log("Si è verificato un errore!", error))
   }
 
