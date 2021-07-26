@@ -10,17 +10,13 @@ const FILTER_MAP = {
 };
 
 const FILTER_NAMES = Object.keys(FILTER_MAP);
-console.log("filter", FILTER_NAMES)
 
 function App(props) {
 
   const [filter, setFilter] = useState('All');
-  // const [tasks, setTasks] = useState(props.tasks);
   const [tasks, setTasks] = useState([]);
-  let [counter, setCounter] = useState(3);
 
-
-  // Use effect AJAX GET all tasks
+  // Use effect AJAX GET all tasks, this is called when the page has stopped rendering
   useEffect(() => {
     getAll()
   }, [])
@@ -33,9 +29,10 @@ function App(props) {
         const result = data.task_list.map(({ _id, name, completed }) => ({ id: _id, name, completed }));
         setTasks(result)
       })
-      .catch(error => console.log("Si è verificato un errore!"))
+      .catch(error => console.log("Error", error))
   }
 
+  // Create filter list based on FILTER_NAMES
   const filterList = FILTER_NAMES.map(name => (
     <Filterbutton
       key={name}
@@ -45,40 +42,24 @@ function App(props) {
     />
   ));
 
-  FILTER_NAMES.map(name => console.log(name));
-
-  // const taskList = props.tasks.map(task => task.name);
-  const taskList = tasks.map(task => (
-    <Todo
-      id={task.id}
-      name={task.name}
-      completed={task.completed}
-      key={task.id}
-      toggleTaskCompleted={toggleTaskCompleted}
-      deleteTask={deleteTask}
-      editTask={editTask}
-    />
-  )
-  );
-
-  const tasksNoun = taskList.length !== 1 ? 'tasks' : 'task';
-  const headingText = `${taskList.length} ${tasksNoun} remaining`;
-
-  console.log("DATA", props.tasks)
+  const taskList = tasks
+    .filter(FILTER_MAP[filter]) //Pass a function that for each item returns each item that has a completed state true or false based on the filter
+    .map(task => (
+      <Todo
+        id={task.id}
+        name={task.name}
+        completed={task.completed}
+        key={task.id}
+        toggleTaskCompleted={toggleTaskCompleted}
+        updateTaskName={updateTaskName}
+        deleteTask={deleteTask}
+      />
+    )
+    );
 
   // PUT completed
   function toggleTaskCompleted(id) {
-    // const updatedTasks = tasks.map(task => {
-    //   // if this task has the same ID as the edited task
-    //   if (id === task.id) {
-    //     // use object spread to make a new object
-    //     // whose `completed` prop has been inverted
-    //     return { ...task, completed: !task.completed }
-    //   }
-    //   return task;
-    // });
-    // setTasks(updatedTasks);
-    tasks.map(task => {
+    tasks.forEach(task => {
       if (id === task.id) {
         const URL = `http://localhost:3030/tasklist/${id}/completed`;
         fetch(URL, {
@@ -87,18 +68,26 @@ function App(props) {
           body: JSON.stringify({ "completed": !task.completed })
         })
           .then(response => { getAll(); })
-          .catch(error => console.log("Si è verificato un errore!", error))
+          .catch(error => console.log("Error", error))
       };
 
       getAll();
     });
   }
 
+  function updateTaskName(id, newName) {
+    const URL = `http://localhost:3030/tasklist/${id}`;
+    fetch(URL, {
+      method: 'PUT',
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify({ "name": newName })
+    })
+      .then((resp) => getAll())
+      .catch(error => console.log("Error", error))
+  }
+
   // POST task
   function addTask(name) {
-    // const newTask = { id: "todo-" + counter, name: name, completed: false };
-    // setTasks([...tasks, newTask]);
-    // setCounter(++counter)
     const URL = "http://localhost:3030/tasklist/create";
     fetch(URL, {
       method: 'POST',
@@ -106,26 +95,24 @@ function App(props) {
       body: JSON.stringify({ "name": name })
     })
       .then(response => { getAll(); })
-      .catch(error => console.log("Si è verificato un errore!", error))
+      .catch(error => console.log("Error", error))
   }
 
   // DELETE
   function deleteTask(id) {
-    // const remainingTasks = tasks.filter(task => id !== task.id);
-    // setTasks(remainingTasks);
     const URL = "http://localhost:3030/tasklist/" + id;
     fetch(URL, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     })
       .then(response => { getAll(); })
-      .catch(error => console.log("Si è verificato un errore!", error))
+      .catch(error => console.log("Error", error))
   }
 
-  function editTask(id, newName) {
-    const editedTaskList = tasks.map(task => task.id == id ? { ...task, name: newName } : task);
-    setTasks(editedTaskList);
-  }
+  // function editTask(id, newName) {
+  //   const editedTaskList = tasks.map(task => task.id === id ? { ...task, name: newName } : task);
+  //   setTasks(editedTaskList);
+  // }
 
   return (
     <div className="todoapp stack-large">
@@ -135,7 +122,7 @@ function App(props) {
         {filterList}
       </div>
       <h2 id="list-heading">
-        {headingText}
+        {taskList.length === 1 ? taskList.length + " task remaining" : taskList.length + " tasks remaining"}
       </h2>
       <ul
         role="list"

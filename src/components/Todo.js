@@ -11,7 +11,7 @@ export default function Todo(props) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    props.editTask(props.id, newname);
+    props.updateTaskName(props.id, newname);
     setNewname("");
     setEditing(false);
   }
@@ -40,6 +40,7 @@ export default function Todo(props) {
       </div>
     </form>
   );
+
   const viewTemplate = (
     <div className="stack-small">
       <div className="c-cb">
@@ -67,8 +68,6 @@ export default function Todo(props) {
       </div>
     </div>
   );
-
-  console.log("Props", props)
 
   return <li className="todo">{isEditing ? editingTemplate : viewTemplate}</li>;
 }
